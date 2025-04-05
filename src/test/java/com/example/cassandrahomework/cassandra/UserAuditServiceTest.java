@@ -98,7 +98,6 @@ public class UserAuditServiceTest {
         String eventDetails = "Sub websites are got";
         UserAuditInfo userAuditInfo = new UserAuditInfo(userId, eventTime, eventType, eventDetails);
         try {
-            System.out.println(topic.name());
             kafkaTemplate.send(topic.name(), objectMapper.writeValueAsString(userAuditInfo));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
