@@ -39,7 +39,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(
-properties = {"topic-to-send-message=test-topic"})
+properties = {"topic-to-send-message=test-topic1"})
 @Import({KafkaAutoConfiguration.class})
 @Transactional
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
