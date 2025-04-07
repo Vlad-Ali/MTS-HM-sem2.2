@@ -1,5 +1,6 @@
 package com.example.cassandrahomework.service.website;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.example.cassandrahomework.model.user.User;
 import com.example.cassandrahomework.model.user.UserAuditInfo;
 import com.example.cassandrahomework.model.user.UserId;
@@ -19,6 +20,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,13 +29,17 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.CassandraContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,6 +51,9 @@ properties = {"topic-to-send-message=test-topic1"})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 public class WebsitesServiceTest extends DatabaseSuite{
+
+    @Container
+    private static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>("cassandra:4.1").withExposedPorts(9042);
 
     @Container
     @ServiceConnection
@@ -61,6 +70,33 @@ public class WebsitesServiceTest extends DatabaseSuite{
 
     @Autowired
     private NewTopic testTopic;
+
+    @DynamicPropertySource
+    static void cassandraProperties(DynamicPropertyRegistry registry) {
+        registry.add("cassandra.contact-points", CASSANDRA::getHost);
+        registry.add("cassandra.port", () -> CASSANDRA.getMappedPort(9042));
+        registry.add("cassandra.local-datacenter", () -> "datacenter1");
+    }
+
+    @BeforeAll
+    static void setCassandra(){
+        try (CqlSession session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getMappedPort(9042)))
+                .withLocalDatacenter("datacenter1")
+                .build()) {
+
+            session.execute("CREATE KEYSPACE IF NOT EXISTS my_keyspace WITH replication = "
+                    + "{'class':'SimpleStrategy', 'replication_factor':1};");
+
+            session.execute("CREATE TABLE IF NOT EXISTS my_keyspace.user_audit ("
+                    + "user_id UUID,"
+                    + "event_time TIMESTAMP,"
+                    + "event_type TEXT,"
+                    + "event_details TEXT,"
+                    + "PRIMARY KEY ((user_id), event_time)"
+                    + ") WITH CLUSTERING ORDER BY (event_time DESC);");
+        }
+    }
 
     @Test
     void shouldSendMessageToKafkaSuccessfully() {
