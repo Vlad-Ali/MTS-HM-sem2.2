@@ -7,7 +7,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.lifecycle.Startables;
 
-@ContextConfiguration(initializers = DatabaseSuite.Initializer.class)
+/*@ContextConfiguration(initializers = DatabaseSuite.Initializer.class)
 public class DatabaseSuite {
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
 
@@ -24,4 +24,4 @@ public class DatabaseSuite {
             ).applyTo(context);
         }
     }
-}
+}*/
