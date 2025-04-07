@@ -48,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.*;
 properties = {"topic-to-send-message=test-topic1"})
 @Import({KafkaAutoConfiguration.class})
 @Transactional
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 public class WebsitesServiceTest extends DatabaseSuite{
 
