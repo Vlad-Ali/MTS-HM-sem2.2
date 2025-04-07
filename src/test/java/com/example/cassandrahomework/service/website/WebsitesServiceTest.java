@@ -52,9 +52,11 @@ properties = {"topic-to-send-message=test-topic1"})
 @Testcontainers
 public class WebsitesServiceTest{
 
+    @ServiceConnection
     @Container
     public static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
 
+    @ServiceConnection
     @Container
     private static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>("cassandra:4.1").withExposedPorts(9042);
 
@@ -73,16 +75,6 @@ public class WebsitesServiceTest{
 
     @Autowired
     private NewTopic testTopic;
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("cassandra.contact-points", CASSANDRA::getHost);
-        registry.add("cassandra.port", () -> CASSANDRA.getMappedPort(9042));
-        registry.add("cassandra.local-datacenter", () -> "datacenter1");
-    }
 
     @BeforeAll
     static void setCassandra(){
