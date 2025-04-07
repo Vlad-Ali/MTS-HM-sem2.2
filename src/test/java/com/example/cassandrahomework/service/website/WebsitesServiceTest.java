@@ -34,6 +34,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.CassandraContainer;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -49,7 +50,10 @@ properties = {"topic-to-send-message=test-topic1"})
 @Import({KafkaAutoConfiguration.class})
 @Transactional
 @Testcontainers
-public class WebsitesServiceTest extends DatabaseSuite{
+public class WebsitesServiceTest{
+
+    @Container
+    public static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
 
     @Container
     private static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>("cassandra:4.1").withExposedPorts(9042);
@@ -71,7 +75,10 @@ public class WebsitesServiceTest extends DatabaseSuite{
     private NewTopic testTopic;
 
     @DynamicPropertySource
-    static void cassandraProperties(DynamicPropertyRegistry registry) {
+    static void setProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRES::getUsername);
+        registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("cassandra.contact-points", CASSANDRA::getHost);
         registry.add("cassandra.port", () -> CASSANDRA.getMappedPort(9042));
         registry.add("cassandra.local-datacenter", () -> "datacenter1");
