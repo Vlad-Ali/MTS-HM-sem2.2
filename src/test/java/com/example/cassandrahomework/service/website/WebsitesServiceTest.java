@@ -52,10 +52,6 @@ public class WebsitesServiceTest{
     @Container
     public static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
 
-    @ServiceConnection
-    @Container
-    private static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>("cassandra:4.1").withExposedPorts(9042);
-
     @Container
     @ServiceConnection
     public static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.0"));
@@ -71,26 +67,6 @@ public class WebsitesServiceTest{
 
     @Autowired
     private NewTopic testTopic;
-
-    @BeforeAll
-    static void setCassandra(){
-        try (CqlSession session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getMappedPort(9042)))
-                .withLocalDatacenter("datacenter1")
-                .build()) {
-
-            session.execute("CREATE KEYSPACE IF NOT EXISTS my_keyspace WITH replication = "
-                    + "{'class':'SimpleStrategy', 'replication_factor':1};");
-
-            session.execute("CREATE TABLE IF NOT EXISTS my_keyspace.user_audit ("
-                    + "user_id UUID,"
-                    + "event_time TIMESTAMP,"
-                    + "event_type TEXT,"
-                    + "event_details TEXT,"
-                    + "PRIMARY KEY ((user_id), event_time)"
-                    + ") WITH CLUSTERING ORDER BY (event_time DESC);");
-        }
-    }
 
     @Test
     void shouldSendMessageToKafkaSuccessfully() {
