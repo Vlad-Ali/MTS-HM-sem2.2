@@ -66,15 +66,15 @@ public class UserAuditServiceTest{
 
     @DynamicPropertySource
     static void cassandraProperties(DynamicPropertyRegistry registry) {
-        registry.add("cassandra.contact-points", CASSANDRA::getHost);
-        registry.add("cassandra.port", () -> CASSANDRA.getContactPoint().getPort());
-        registry.add("cassandra.local-datacenter", () -> "datacenter1");
+        registry.add("cassandra.contact-points", CASSANDRA::getContactPoint);
+        registry.add("cassandra.port", CASSANDRA::getFirstMappedPort);
+        registry.add("cassandra.local-datacenter", CASSANDRA::getLocalDatacenter);
     }
 
     @BeforeAll
     static void setCassandra(){
         try (CqlSession session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getContactPoint().getPort()))
+                .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getFirstMappedPort()))
                 .withLocalDatacenter("datacenter1")
                 .build()) {
 

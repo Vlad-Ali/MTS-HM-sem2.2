@@ -79,9 +79,9 @@ public class WebsitesServiceTest{
 
     @DynamicPropertySource
     static void cassandraProperties(DynamicPropertyRegistry registry) {
-        registry.add("cassandra.contact-points", CASSANDRA::getHost);
-        registry.add("cassandra.port", () -> CASSANDRA.getContactPoint().getPort());
-        registry.add("cassandra.local-datacenter", () -> "datacenter1");
+        registry.add("cassandra.contact-points", CASSANDRA::getContactPoint);
+        registry.add("cassandra.port", CASSANDRA::getFirstMappedPort);
+        registry.add("cassandra.local-datacenter", CASSANDRA::getLocalDatacenter);
     }
 
     @Test
