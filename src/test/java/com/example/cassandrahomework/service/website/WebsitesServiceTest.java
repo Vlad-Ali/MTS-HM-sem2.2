@@ -1,6 +1,7 @@
 package com.example.cassandrahomework.service.website;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.example.cassandrahomework.cassandra.UserAuditService;
 import com.example.cassandrahomework.model.user.User;
 import com.example.cassandrahomework.model.user.UserAuditInfo;
 import com.example.cassandrahomework.model.user.UserId;
@@ -12,6 +13,8 @@ import com.example.cassandrahomework.repository.website.JpaWebsitesRepository;
 import com.example.cassandrahomework.service.user.UsersService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import databasesuite.DatabaseSuite;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -24,6 +27,8 @@ import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -50,7 +55,11 @@ public class WebsitesServiceTest{
 
     @ServiceConnection
     @Container
-    public static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
+    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16");
+
+    @ServiceConnection
+    @Container
+    private static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>("cassandra:4.1");
 
     @Container
     @ServiceConnection
@@ -67,6 +76,13 @@ public class WebsitesServiceTest{
 
     @Autowired
     private NewTopic testTopic;
+
+    @DynamicPropertySource
+    static void cassandraProperties(DynamicPropertyRegistry registry) {
+        registry.add("cassandra.contact-points", CASSANDRA::getHost);
+        registry.add("cassandra.port", () -> CASSANDRA.getContactPoint().getPort());
+        registry.add("cassandra.local-datacenter", () -> "datacenter1");
+    }
 
     @Test
     void shouldSendMessageToKafkaSuccessfully() {
@@ -101,6 +117,30 @@ public class WebsitesServiceTest{
         assertEquals(0, records.count());
     }
 
+    /*@Configuration
+    static class TestConfig {
+
+        @Bean
+        public ObjectMapper objectMapper(){
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+            return objectMapper;
+        }
+
+        @Bean
+        public CqlSession cqlSession() {
+            return CqlSession.builder()
+                    .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getContactPoint().getPort()))
+                    .withLocalDatacenter("datacenter1")
+                    .build();
+        }
+
+        @Bean
+        public UserAuditService userAuditService(CqlSession cqlSession,  ObjectMapper objectMapper) {
+            return new UserAuditService(cqlSession, objectMapper);
+        }
+
+    }*/
 
 
 }

@@ -6,6 +6,7 @@ import com.example.cassandrahomework.model.user.UserAuditInfo;
 import com.example.cassandrahomework.objectmapper.ObjectMapperConfig;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import databasesuite.DatabaseSuite;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,14 +43,14 @@ import static org.junit.jupiter.api.Assertions.*;
 })
 @Testcontainers
 @Import({KafkaAutoConfiguration.class, ObjectMapperConfig.class, KafkaTopicConfig.class})
-public class UserAuditServiceTest {
+public class UserAuditServiceTest{
 
     @Container
     @ServiceConnection
     public static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.4.0"));
 
     @Container
-    private static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>("cassandra:4.1").withExposedPorts(9042);
+    private static final CassandraContainer<?> CASSANDRA = new CassandraContainer<>("cassandra:4.1");
 
     @Autowired
     private UserAuditService userAuditService;
@@ -66,14 +67,14 @@ public class UserAuditServiceTest {
     @DynamicPropertySource
     static void cassandraProperties(DynamicPropertyRegistry registry) {
         registry.add("cassandra.contact-points", CASSANDRA::getHost);
-        registry.add("cassandra.port", () -> CASSANDRA.getMappedPort(9042));
+        registry.add("cassandra.port", () -> CASSANDRA.getContactPoint().getPort());
         registry.add("cassandra.local-datacenter", () -> "datacenter1");
     }
 
     @BeforeAll
     static void setCassandra(){
         try (CqlSession session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getMappedPort(9042)))
+                .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getContactPoint().getPort()))
                 .withLocalDatacenter("datacenter1")
                 .build()) {
 
@@ -146,7 +147,7 @@ public class UserAuditServiceTest {
         @Bean
         public CqlSession cqlSession() {
             return CqlSession.builder()
-                    .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getMappedPort(9042)))
+                    .addContactPoint(new InetSocketAddress(CASSANDRA.getHost(), CASSANDRA.getContactPoint().getPort()))
                     .withLocalDatacenter("datacenter1")
                     .build();
         }

@@ -25,6 +25,8 @@ spring:
     listener.ack-mode: manual_immediate
 topic-to-send-message: topic1
 topic-to-consume-message: topic1
+cassandra:
+  port: 9042
 logging:
   level:
     com.example.cassandrahomework.service: DEBUG
