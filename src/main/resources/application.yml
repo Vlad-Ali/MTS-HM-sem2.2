@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: cassandrahomework
+  kafka:
+    bootstrap-servers: localhost:29093
+    consumer:
+      group-id: group1
+      enable-auto-commit: false
+    listener.ack-mode: manual_immediate
+server:
+  port: 8081
+topic-to-consume-message: topic1
+cassandra:
+  port: 9042
+logging:
+  level:
+    com.example.kafkaconsumerhomework.cassandra: DEBUG
+    com.example.kafkaconsumerhomework.controller: DEBUG
