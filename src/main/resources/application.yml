@@ -14,5 +14,5 @@ cassandra:
   port: 9042
 logging:
   level:
-    com.example.kafkaconsumerhomework.cassandra: DEBUG
+    com.example.kafkaconsumerhomework.cassandra: ERROR
     com.example.kafkaconsumerhomework.controller: DEBUG

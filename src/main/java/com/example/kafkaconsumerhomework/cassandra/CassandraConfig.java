@@ -1,6 +1,8 @@
 package com.example.kafkaconsumerhomework.cassandra;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.example.kafkaconsumerhomework.cassandra.exception.NotCreatingCassandraKeyspaceException;
+import com.example.kafkaconsumerhomework.cassandra.exception.NotCreatingCassandraTableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +27,8 @@ public class CassandraConfig {
             cqlSession.execute(query);
             LOG.debug("Keyspace 'my_keyspace' created successfully.");
         } catch (Exception e) {
-            LOG.debug("Failed to create keyspace: " + e.getMessage());
+            LOG.error("Failed to create keyspace: " + e.getMessage());
+            throw new NotCreatingCassandraKeyspaceException(e.getMessage());
         }
 
         try {
@@ -35,12 +38,12 @@ public class CassandraConfig {
                     "event_type TEXT," +
                     "event_details TEXT," +
                     "PRIMARY KEY ((user_id), event_time)" +
-                    ") WITH CLUSTERING ORDER BY (event_time DESC);"+
-                    "AND default_time_to_live = 2592000;";
+                    ") WITH CLUSTERING ORDER BY (event_time DESC);";
             cqlSession.execute(query);
             LOG.debug("Table 'user_audit' created successfully.");
         } catch (Exception e) {
-            LOG.debug("Failed to create table: " + e.getMessage());
+            LOG.error("Failed to create table: " + e.getMessage());
+            throw new NotCreatingCassandraTableException(e.getMessage());
         }
         return cqlSession;
     }

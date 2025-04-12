@@ -117,8 +117,8 @@ public class UserAuditServiceTest{
         Instant eventTime = Instant.now();
         String eventType = "SELECT";
         String eventDetails = "Sub websites are got";
-        userAuditService.createRequest(userId, eventTime, eventType, eventDetails);
-        assertFalse(userAuditService.createRequest(null, eventTime, eventType, eventDetails));
+        userAuditService.saveUserAudit(userId, eventTime, eventType, eventDetails);
+        assertFalse(userAuditService.saveUserAudit(null, eventTime, eventType, eventDetails));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class UserAuditServiceTest{
         String eventType = "SELECT";
         String eventDetails = "Sub websites are got";
 
-        userAuditService.createRequest(userId, eventTime, eventType, eventDetails);
+        userAuditService.saveUserAudit(userId, eventTime, eventType, eventDetails);
 
         List<UserAuditInfo> auditInfoList = userAuditService.getInfoByUserId(userId);
 

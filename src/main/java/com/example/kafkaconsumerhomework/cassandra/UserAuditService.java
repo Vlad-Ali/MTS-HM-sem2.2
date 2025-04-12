@@ -35,7 +35,7 @@ public class UserAuditService {
     }
 
 
-    public boolean createRequest(UUID userId, Instant eventTime, String eventType, String eventDetails){
+    public boolean saveUserAudit(UUID userId, Instant eventTime, String eventType, String eventDetails){
         try {
             PreparedStatement preparedStatement = cqlSession.prepare("INSERT INTO my_keyspace.user_audit" +
                     "(user_id, event_time, event_type, event_details) VALUES (?, ?, ?, ?)");
@@ -70,7 +70,7 @@ public class UserAuditService {
         try {
             UserAuditInfo userAuditInfo = objectMapper.readValue(message, UserAuditInfo.class);
             LOG.debug("Retrieved message {}", userAuditInfo);
-            createRequest(userAuditInfo.userId(), userAuditInfo.eventTime(), userAuditInfo.eventType(), userAuditInfo.eventDetails());
+            saveUserAudit(userAuditInfo.userId(), userAuditInfo.eventTime(), userAuditInfo.eventType(), userAuditInfo.eventDetails());
             acknowledgment.acknowledge();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
