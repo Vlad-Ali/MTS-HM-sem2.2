@@ -20,8 +20,22 @@ spring:
   kafka:
     bootstrap-servers: localhost:29093
 topic-to-send-message: topic1
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      service: "user-service"
+  endpoints:
+    web:
+      base-path: /admin/actuator
+      exposure:
+        include: health, info, prometheus, metrics
+        exclude: shutdown
 logging:
   level:
     com.example.kafkaproducerhomework.service: DEBUG
     com.example.kafkaproducerhomework.repository: DEBUG
+    com.example.kafkaproducerhomework.scheduler: DEBUG
     org.flywaydb: DEBUG

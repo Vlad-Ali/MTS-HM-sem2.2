@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -28,13 +29,26 @@ public class OutboxScheduler {
     }
 
     @Transactional
-    @Scheduled(initialDelay = 10000, fixedRate = 10000 * 100)
-    public void processOutbox(){
-        List<OutboxEntity> result = outboxRepository.findAll();
-        for (OutboxEntity outboxEntity : result){
+    @Scheduled(initialDelay = 10000, fixedRate = 10000 * 10)
+    public void processOutbox() {
+        processMessages(outboxRepository.findAll());
+    }
+
+    public void processMessages(List<OutboxEntity> messages) {
+        for (OutboxEntity outboxEntity : messages) {
             CompletableFuture<SendResult<String, String>> sendResult = kafkaTemplate.send(topic.name(), outboxEntity.getData());
+            handleKafkaResult(sendResult);
         }
         outboxRepository.deleteAll();
         LOG.debug("Outbox data add to topic");
     }
+
+    void handleKafkaResult(CompletableFuture<SendResult<String, String>> future) {
+        future.whenComplete((res, ex) -> {
+            if (ex != null) {
+                LOG.error("Failed to send message to Kafka", ex);
+            }
+        });
+    }
+
 }

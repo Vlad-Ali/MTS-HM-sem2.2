@@ -31,7 +31,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(
-        properties = {"topic-to-send-message=test-topic1"})
+        properties = {"topic-to-send-message=test-topic1",
+                "spring.aop.auto=false"})
 @Import({KafkaAutoConfiguration.class})
 @Transactional
 @Testcontainers
