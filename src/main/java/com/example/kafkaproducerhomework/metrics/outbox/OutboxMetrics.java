@@ -1,4 +1,4 @@
-package com.example.kafkaproducerhomework.scheduler;
+package com.example.kafkaproducerhomework.metrics.outbox;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -10,16 +10,11 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class OutboxMetrics {
-    private final Counter rpsCounter;
     private final Timer responseTimer;
     private final Timer sliTimer;
     private final DistributionSummary heatmapDistribution;
 
     public OutboxMetrics(MeterRegistry registry) {
-        this.rpsCounter = Counter.builder("outbox.requests.rps")
-                .description("Requests per second for outbox processing")
-                .register(registry);
-
         this.responseTimer = Timer.builder("outbox.response.avg")
                 .description("Average response time for outbox processing")
                 .publishPercentiles(0.5, 0.75, 0.95, 0.99)
@@ -37,16 +32,9 @@ public class OutboxMetrics {
                 .register(registry);
     }
 
-    public void recordSuccess(long duration) {
-        sliTimer.record(duration, TimeUnit.MILLISECONDS);
-    }
-
-    public void incrementRequests(int count) {
-        rpsCounter.increment(count);
-    }
-
     public void recordProcessDuration(long duration) {
         responseTimer.record(duration, TimeUnit.MILLISECONDS);
         heatmapDistribution.record(duration);
+        sliTimer.record(duration, TimeUnit.MILLISECONDS);
     }
 }

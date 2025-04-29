@@ -37,18 +37,9 @@ public class OutboxScheduler {
     public void processMessages(List<OutboxEntity> messages) {
         for (OutboxEntity outboxEntity : messages) {
             CompletableFuture<SendResult<String, String>> sendResult = kafkaTemplate.send(topic.name(), outboxEntity.getData());
-            handleKafkaResult(sendResult);
         }
         outboxRepository.deleteAll();
         LOG.debug("Outbox data add to topic");
-    }
-
-    void handleKafkaResult(CompletableFuture<SendResult<String, String>> future) {
-        future.whenComplete((res, ex) -> {
-            if (ex != null) {
-                LOG.error("Failed to send message to Kafka", ex);
-            }
-        });
     }
 
 }

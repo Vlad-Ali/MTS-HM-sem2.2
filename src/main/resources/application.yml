@@ -38,4 +38,5 @@ logging:
     com.example.kafkaproducerhomework.service: DEBUG
     com.example.kafkaproducerhomework.repository: DEBUG
     com.example.kafkaproducerhomework.scheduler: DEBUG
+    com.example.kafkaproducerhomework.metrics: DEBUG
     org.flywaydb: DEBUG
